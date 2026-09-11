@@ -71,6 +71,7 @@ const main = async () => {
 
   const mediaDir = join(dirname(logPath), 'media')
   let restored = 0
+  let skipped = 0
   for (const attachmentId of referenced) {
     const hex = attachmentId.replace(/^sha256:/u, '')
     if (!/^[a-f0-9]{64}$/u.test(hex)) throw new Error(`bad attachment id: ${attachmentId}`)
@@ -79,12 +80,17 @@ const main = async () => {
     const data = readFileSync(join(mediaDir, hit))
     if (createHash('sha256').update(data).digest('hex') !== hex) throw new Error(`digest mismatch: ${attachmentId}`)
     const targetDir = join(attachmentsRoot, 'v1', 'objects', hex.slice(0, 2))
+    const targetPath = join(targetDir, hex)
+    if (existsSync(targetPath)) {
+      skipped += 1
+      continue
+    }
     mkdirSync(targetDir, { recursive: true })
-    copyFileSync(join(mediaDir, hit), join(targetDir, hex))
-    chmodSync(join(targetDir, hex), 0o444)
+    copyFileSync(join(mediaDir, hit), targetPath)
+    chmodSync(targetPath, 0o444)
     restored += 1
   }
-  console.log(`${header.id}: ${events.length} events, ${frames.length} frames, ${restored}/${referenced.size} attachments`)
+  console.log(`${header.id}: ${events.length} events, ${frames.length} frames, ${restored} restored, ${skipped} skipped (${referenced.size} referenced)`)
 }
 
 main().catch((error) => { console.error(error.message); process.exit(1) })

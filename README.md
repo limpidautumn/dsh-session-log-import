@@ -21,4 +21,10 @@
 
 `<dest>` 位于 `$DSH_HOME/sessions/` 下时，`<attachroot>` 为 `$DSH_HOME/attachments`；路径中含 `/sessions/` 时，则为 `<dest>/../../attachments`。
 
+附件库中已存在的对象会跳过，重复导入幂等。
+
 依赖：`unzip`、`node`。
+
+## 跨工作空间迁移
+
+若直接运行脚本，启动时会报错。请参照 [cross-workspace.md](./docs/cross-workspace.md) 完成迁移。
